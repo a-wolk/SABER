@@ -1,11 +1,10 @@
 import numpy as np
-import numpy.typing as npt
 import custom_types as T
 from constants import PARAMS, N, Q
 from bs2 import BS2OLVECq
 from hash import shake128
 
-def gen_matrix(seed: npt.NDArray[np.uint8], params: PARAMS) -> npt.NDArray[np.uint16]:
+def gen_matrix(seed: T.Bytes, params: PARAMS) -> T.PolyMatrix:
     buf = shake128(seed, params.SABER_L*params.SABER_L*Q*N//8).reshape((params.SABER_L, params.SABER_L, Q*N//8))
     A = np.zeros((params.SABER_L, params.SABER_L, N), dtype=np.uint16)
     for i in range(params.SABER_L):
@@ -15,7 +14,7 @@ def gen_matrix(seed: npt.NDArray[np.uint8], params: PARAMS) -> npt.NDArray[np.ui
 def hamming(bits: np.uint8):
     return (bits & 0x1) + (bits & 0x2) + (bits & 0x4) + (bits & 0x8) + (bits & 0x10) + (bits & 0x20) + (bits & 0x40) + (bits & 0x80)
 
-def gen_secret(seed: npt.NDArray[np.uint8], params: PARAMS) -> npt.NDArray[np.uint16]:
+def gen_secret(seed: T.Bytes, params: PARAMS) -> T.PolyVector:
     buf = shake128(seed, params.SABER_L*params.SABER_MU*N//8)
     out = np.zeros((params.SABER_L, N), dtype=np.uint16)
 

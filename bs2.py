@@ -1,10 +1,9 @@
 import numpy as np
-import numpy.typing as npt
 import custom_types as T
 from constants import N, Q, P
 
 
-def BS2POLq(bytes: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint16]:
+def BS2POLq(bytes: T.Bytes) -> T.Poly:
     out = np.zeros((N,), dtype=np.uint16)
 
     bytes_last = Q*N//8-1
@@ -20,14 +19,14 @@ def BS2POLq(bytes: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint16]:
         out[i] |= (bytes[end_byte] & (0xff >> end_offset)) << ((8-start_offset) + 8*is_3_bytes)
     return out
 
-def BS2OLVECq(bytes: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint16]:
+def BS2OLVECq(bytes: T.Bytes) -> T.PolyVector:
     l = bytes.shape[0]
     out = np.zeros((l,N), dtype=np.uint16)
     for i in range(l):
         out[i, :] = BS2POLq(bytes[l-i-1, :])
     return out
 
-def POLq2BS(p: T.Poly) -> npt.NDArray[np.uint8]:
+def POLq2BS(p: T.Poly) -> T.Bytes:
     out = np.zeros((Q*N//8,), dtype=np.uint8)
 
     bytes_last = Q*N//8-1
@@ -43,14 +42,14 @@ def POLq2BS(p: T.Poly) -> npt.NDArray[np.uint8]:
         out[start_byte] |= ((p[i] & (0xff >> start_offset)) << start_offset)
     return out
 
-def POLVECq2BS(v: T.PolyVector) -> npt.NDArray[np.uint8]:
+def POLVECq2BS(v: T.PolyVector) -> T.Bytes:
     l = v.shape[0]
     out = np.zeros((l*Q*N//8,), dtype=np.uint8)
     for i in range(l):
         out[i*Q*N//8:(i+1)*Q*N//8] = POLq2BS(v[i, :])
     return out
 
-def POLp2BS(p: T.Poly) -> npt.NDArray[np.uint8]:
+def POLp2BS(p: T.Poly) -> T.Bytes:
     out = np.zeros((P*N//8,), dtype=np.uint8)
 
     bytes_last = P*N//8-1
@@ -66,7 +65,7 @@ def POLp2BS(p: T.Poly) -> npt.NDArray[np.uint8]:
         out[start_byte] |= ((p[i] & (0xff >> start_offset)) << start_offset)
     return out
 
-def POLVECp2BS(v: T.PolyVector) -> npt.NDArray[np.uint8]:
+def POLVECp2BS(v: T.PolyVector) -> T.Bytes:
     l = v.shape[0]
     out = np.zeros((l*P*N//8,), dtype=np.uint8)
     for i in range(l):

@@ -1,5 +1,5 @@
-import numpy as np
 import custom_types as T
+from typing import Tuple
 from constants import PARAMS, Q, P, LIGHT_PARAMS
 from rng import randombytes
 from hash import shake128
@@ -7,7 +7,7 @@ from poly import gen_matrix, gen_secret, shiftright
 from poly_mul import matrix_vector_mul
 from bs2 import POLVECq2BS, POLVECp2BS
 
-def keygen(params: PARAMS):
+def keygen(params: PARAMS) -> Tuple[Tuple[T.Bytes, T.Bytes], T.Bytes]:
     seed_a = randombytes(params.SABER_SEEDBYTES)
     seed_a = shake128(seed_a, params.SABER_SEEDBYTES)
     seed_s = randombytes(params.SABER_NOISE_SEEDBYTES)
