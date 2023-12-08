@@ -1,14 +1,14 @@
 import numpy as np
 import custom_types as T
 from constants import PARAMS, N, Q
-from bs2 import BS2OLVECq
+from bs2 import BS2POLVECq
 from hash import shake128
 
 def gen_matrix(seed: T.Bytes, params: PARAMS) -> T.PolyMatrix:
     buf = shake128(seed, params.SABER_L*params.SABER_L*Q*N//8).reshape((params.SABER_L, params.SABER_L, Q*N//8))
     A = np.zeros((params.SABER_L, params.SABER_L, N), dtype=np.uint16)
     for i in range(params.SABER_L):
-        A[i, :, :] = BS2OLVECq(buf[params.SABER_L-i-1, :, :])
+        A[i, :, :] = BS2POLVECq(buf[params.SABER_L-i-1, :, :])
     return A
 
 def hamming(bits: np.uint8):
@@ -39,6 +39,12 @@ def shiftright(pol: T.Poly, s: int) -> T.Poly:
     out = pol.copy()
     for i in range(N):
         out[i] >>= s
+    return out
+
+def shiftleft(pol: T.Poly, s: int) -> T.Poly:
+    out = pol.copy()
+    for i in range(N):
+        out[i] <<= s
     return out
 
 #print(gen_matrix(randombytes(LIGHT_PARAMS.SABER_SEEDBYTES), LIGHT_PARAMS).tolist())

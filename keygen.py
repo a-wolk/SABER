@@ -14,7 +14,7 @@ def keygen(params: PARAMS) -> Tuple[Tuple[T.Bytes, T.Bytes], T.Bytes]:
 
     A = gen_matrix(seed_a, params)
     s = gen_secret(seed_s, params)
-    b = matrix_vector_mul(A, s, 2**Q, True, params)
+    b = (matrix_vector_mul(A, s, 2**Q, True, params) + params.H) % (2**Q)
 
     for i in range(params.SABER_L):
         b[i, :] = shiftright(b[i, :], Q-P)
