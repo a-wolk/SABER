@@ -1,6 +1,6 @@
 import custom_types as T
 from typing import Tuple
-from constants import PARAMS, Q, P, LIGHT_PARAMS
+from constants import PARAMS, Q, P
 from rng import randombytes
 from hash import shake128
 from poly import gen_matrix, gen_secret, shiftright
@@ -23,5 +23,3 @@ def keygen(params: PARAMS) -> Tuple[Tuple[T.Bytes, T.Bytes], T.Bytes]:
     pk = POLVECp2BS(b)
 
     return ((seed_a, pk), secret_key)
-
-print(keygen(LIGHT_PARAMS))

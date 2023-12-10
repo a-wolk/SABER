@@ -12,7 +12,7 @@ def gen_matrix(seed: T.Bytes, params: PARAMS) -> T.PolyMatrix:
     return A
 
 def hamming(bits: np.uint8):
-    return (bits & 0x1) + (bits & 0x2) + (bits & 0x4) + (bits & 0x8) + (bits & 0x10) + (bits & 0x20) + (bits & 0x40) + (bits & 0x80)
+    return sum(list(map(int, bin(bits)[2:])))
 
 def gen_secret(seed: T.Bytes, params: PARAMS) -> T.PolyVector:
     buf = shake128(seed, params.SABER_L*params.SABER_MU*N//8)
@@ -28,11 +28,13 @@ def gen_secret(seed: T.Bytes, params: PARAMS) -> T.PolyVector:
             is_3_bytes = (start_byte - end_byte) > 1
 
             value = 0
-            value |= (buf[end_byte] & (0xff >> end_offset)) << ((8 - end_offset) + (8 if is_3_bytes else 0))
-            value |= buf[end_byte+1] if is_3_bytes else 0
-            value |= (buf[start_byte] >> start_offset)
+            value = (buf[start_byte] & (0xff << start_offset)) >> start_offset
+            if is_3_bytes:
+                value |= (buf[start_byte-1] << (8-start_offset))
+            value |= (buf[end_byte] & (0xff >> end_offset)) << ((8-start_offset) + 8*int(is_3_bytes))
 
-            out[i, j] = (hamming(value & 0xff) - hamming((value & 0xff00) >> 4)) % 2**Q
+            mask = (0xffff << (params.SABER_MU//2))
+            out[i, j] = (hamming(value & (~mask)) - hamming(value & mask)) % 2**Q
     return out
 
 def shiftright(pol: T.Poly, s: int) -> T.Poly:

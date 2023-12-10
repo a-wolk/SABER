@@ -4,11 +4,13 @@ from decrypt import decrypt
 from constants import LIGHT_PARAMS
 import numpy as np
 from rng import randombytes
+from bs2 import BS2POL2
 
 (pk, sk) = keygen(LIGHT_PARAMS)
 
-m = np.random.randint(0, 256, size=(256,), dtype=np.uint8)
+m = np.random.randint(0, 256, size=(32,), dtype=np.uint8)
 print(m.tolist())
+print(BS2POL2(m).tolist())
 
 e = encrypt(
     m, 
@@ -20,4 +22,4 @@ e = encrypt(
 d = decrypt(e, sk, LIGHT_PARAMS)
 
 print(d.tolist())
-print(m == d)
+print((m == d).all())
