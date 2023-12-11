@@ -1,9 +1,13 @@
 import numpy as np
 import custom_types as T
 from constants import PARAMS, N
+from numpy.polynomial import polynomial as poly
 
 def poly_mul(a: T.Poly, b: T.Poly, q: int, params: PARAMS) -> T.Poly:
-    return np.polynomial.polynomial.polydiv(np.polynomial.polynomial.polymul(a, b), params.POLYNOMIAL_COEFF)[1].astype(np.int64) % q
+    c = params.POLYNOMIAL_COEFF
+    a_mul_b = poly.polymul(a, b).astype(np.int64)
+    a_mul_b_mod_c = poly.polydiv(a_mul_b, c)[1].astype(np.int64) 
+    return (a_mul_b_mod_c + q) % q
 
 def matrix_vector_mul(A: T.PolyMatrix, v: T.PolyVector, q: int, transpose: bool, params: PARAMS) -> T.PolyVector:
     out = np.zeros(params.POLYVEC_SHAPE, dtype=np.int64)
