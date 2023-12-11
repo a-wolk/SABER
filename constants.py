@@ -40,12 +40,12 @@ class PARAMS():
         self.POLY_SHAPE = (N,)
         self.POLYVEC_SHAPE = (SABER_L, N)
         self.POLYMATRIX_SHAPE = (SABER_L, SABER_L, N)
-        self.POLYNOMIAL_COEFF = np.zeros((N+1,), dtype=np.uint16)
+        self.POLYNOMIAL_COEFF = np.zeros((N+1,), dtype=np.int64)
         self.POLYNOMIAL_COEFF[0] = 1
         self.POLYNOMIAL_COEFF[-1] = 1
-        self.H1 = np.ones((N,), dtype=np.uint16) * (2**(Q-P-1))
-        self.H2 = np.ones((N,), dtype=np.uint16) * (2**(P-2) - 2**(P-SABER_ET-1) + 2**(Q-P-1))
-        self.H = np.ones((SABER_L, N), dtype=np.uint16) * self.H1
+        self.H1 = np.ones((N,), dtype=np.int64) * (2**(Q-P-1))
+        self.H2 = np.ones((N,), dtype=np.int64) * (2**(P-2) - 2**(P-SABER_ET-1) + 2**(Q-P-1))
+        self.H = np.ones((SABER_L, N), dtype=np.int64) * self.H1
 
 LIGHT_PARAMS = PARAMS(
     SABER_L = 2,
