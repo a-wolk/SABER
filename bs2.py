@@ -6,7 +6,7 @@ import math
 def BS2POLx(x):
     x = int(math.log2(x))
     def func(bytes: T.Bytes) -> T.Poly:
-        out = np.zeros((N,), dtype=np.uint16)
+        out = np.zeros((N,), dtype=np.int64)
 
         bytes_last = x*N//8-1
         for i in range(N):
@@ -26,7 +26,7 @@ BS2POLp = BS2POLx(2**P)
 BS2POLq = BS2POLx(2**Q)
 
 def BS2POL2(bytes: T.Bytes) -> T.Poly:
-    out = np.zeros((N,), dtype=np.uint16)
+    out = np.zeros((N,), dtype=np.int64)
 
     bytes_last = N//8-1
     for i in range(N):
@@ -42,7 +42,7 @@ def BS2POLVECx(x):
     def func(bytes: T.Bytes) -> T.PolyVector:
         bytes = bytes.reshape((-1, x*N//8))
         l = bytes.shape[0]
-        out = np.zeros((l,N), dtype=np.uint16)
+        out = np.zeros((l,N), dtype=np.int64)
         for i in range(l):
             out[i, :] = bs2pol_x(bytes[l-i-1, :])
         return out
