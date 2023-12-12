@@ -2,7 +2,7 @@ import custom_types as T
 from poly import gen_matrix, gen_secret, shiftright, shiftleft
 from constants import PARAMS, Q, P
 from poly_mul import matrix_vector_mul, inner_prod
-from bs2 import BS2POLVECp, BS2POL2, POLx2BS, POLVECp2BS
+from bs2 import BS2POLVECp, BS2POL2, POLT2BS, POLVECp2BS
 
 def encrypt(m: T.Bytes, seed_s: T.Bytes, pk: T.PublicKey, params: PARAMS) -> T.Bytes:
     seed_a, pk = pk
@@ -21,5 +21,4 @@ def encrypt(m: T.Bytes, seed_s: T.Bytes, pk: T.PublicKey, params: PARAMS) -> T.B
     mp = shiftleft(mp, P-1)
     cm = shiftright((v - mp + params.H1) % (2**P), P - params.SABER_ET)
 
-    POLt2BS = POLx2BS(2**params.SABER_ET)
-    return (POLt2BS(cm), POLVECp2BS(bp))
+    return (POLT2BS(cm), POLVECp2BS(bp))

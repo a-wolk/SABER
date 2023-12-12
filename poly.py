@@ -3,12 +3,13 @@ import custom_types as T
 from constants import PARAMS, N, Q
 from bs2 import BS2POLVECq
 from hash import shake128
+from cbd import cbd
 
 def gen_matrix(seed: T.Bytes, params: PARAMS) -> T.PolyMatrix:
     buf = shake128(seed, params.SABER_L*params.SABER_L*Q*N//8).reshape((params.SABER_L, params.SABER_L, Q*N//8))
-    A = np.zeros((params.SABER_L, params.SABER_L, N), dtype=np.int64)
+    A = np.zeros((params.SABER_L, params.SABER_L, N), dtype=np.uint16)
     for i in range(params.SABER_L):
-        A[i, :, :] = BS2POLVECq(buf[params.SABER_L-i-1, :, :])
+        A[i, :, :] = BS2POLVECq(buf[i, :, :])
     return A
 
 def hamming(bits: np.uint8):
@@ -16,25 +17,11 @@ def hamming(bits: np.uint8):
 
 def gen_secret(seed: T.Bytes, params: PARAMS) -> T.PolyVector:
     buf = shake128(seed, params.SABER_L*params.SABER_MU*N//8)
-    out = np.zeros((params.SABER_L, N), dtype=np.int64)
+    out = np.zeros((params.SABER_L, N), dtype=np.uint16)
 
-    last_byte = params.SABER_L*params.SABER_MU*N//8 - 1
     for i in range(params.SABER_L):
-        for j in range(N):
-            start_byte = last_byte - ((i*N + j)*params.SABER_MU // 8)
-            start_offset = (i*N + j)*params.SABER_MU % 8
-            end_byte = last_byte - ((i*N + j + 1)*params.SABER_MU // 8)
-            end_offset = 8 - ((i*N + j + 1)*params.SABER_MU % 8)
-            is_3_bytes = (start_byte - end_byte) > 1
+        out[i, :] = cbd(buf[i*params.SABER_MU*N//8:(i+1)*params.SABER_MU*N//8])
 
-            value = 0
-            value = (buf[start_byte] & (0xff << start_offset)) >> start_offset
-            if is_3_bytes:
-                value |= (buf[start_byte-1] << (8-start_offset))
-            value |= (buf[end_byte] & (0xff >> end_offset)) << ((8-start_offset) + 8*int(is_3_bytes))
-
-            mask = (0xffff << (params.SABER_MU//2))
-            out[i, j] = (hamming(value & (~mask)) - hamming(value & mask)) % 2**Q
     return out
 
 def shiftright(pol: T.Poly, s: int) -> T.Poly:

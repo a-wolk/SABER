@@ -10,7 +10,6 @@ from bs2 import BS2POL2
 
 m = np.random.randint(0, 256, size=(32,), dtype=np.uint8)
 print(m.tolist())
-print(BS2POL2(m).tolist())
 
 e = encrypt(
     m, 
