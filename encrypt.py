@@ -9,16 +9,16 @@ def encrypt(m: T.Bytes, seed_s: T.Bytes, pk: T.PublicKey, params: PARAMS) -> T.B
 
     A = gen_matrix(seed_a, params)
     s = gen_secret(seed_s, params)
-    bp = (matrix_vector_mul(A, s, 2**Q, False, params) + params.H) % (2**Q)
+    bp = (matrix_vector_mul(A, s, False, params) + params.H) % (2**Q)
 
     for i in range(params.SABER_L):
         bp[i, :] = shiftright(bp[i, :], Q-P)
 
-    b = BS2POLVECp(pk)
-    v = inner_prod(b, s % (2**P), 2**P, params)
+    b = BS2POLVECp(pk, params)
+    v = inner_prod(b, s % (2**P), params)
 
     mp = BS2POL2(m)
     mp = shiftleft(mp, P-1)
     cm = shiftright((v - mp + params.H1) % (2**P), P - params.SABER_ET)
 
-    return (POLT2BS(cm), POLVECp2BS(bp))
+    return (POLT2BS(cm, params.SABER_ET), POLVECp2BS(bp, params))

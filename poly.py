@@ -9,7 +9,7 @@ def gen_matrix(seed: T.Bytes, params: PARAMS) -> T.PolyMatrix:
     buf = shake128(seed, params.SABER_L*params.SABER_L*Q*N//8).reshape((params.SABER_L, params.SABER_L, Q*N//8))
     A = np.zeros((params.SABER_L, params.SABER_L, N), dtype=np.uint16)
     for i in range(params.SABER_L):
-        A[i, :, :] = BS2POLVECq(buf[i, :, :])
+        A[i, :, :] = BS2POLVECq(buf[i, :, :], params)
     return A
 
 def hamming(bits: np.uint8):
@@ -20,7 +20,7 @@ def gen_secret(seed: T.Bytes, params: PARAMS) -> T.PolyVector:
     out = np.zeros((params.SABER_L, N), dtype=np.uint16)
 
     for i in range(params.SABER_L):
-        out[i, :] = cbd(buf[i*params.SABER_MU*N//8:(i+1)*params.SABER_MU*N//8])
+        out[i, :] = cbd(buf[i*params.SABER_MU*N//8:(i+1)*params.SABER_MU*N//8], params.SABER_MU)
 
     return out
 

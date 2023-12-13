@@ -1,5 +1,4 @@
 import numpy as np
-from custom_types import PolyVector, Poly
 
 N = 256
 Q = 13

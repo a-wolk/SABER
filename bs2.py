@@ -1,10 +1,8 @@
 import numpy as np
 import custom_types as T
-from constants import N, Q, P
+from constants import N, Q, P, PARAMS
 
-L = 2
-
-def POLT2BS(p: T.Poly):
+def POL3T2BS(p: T.Poly):
     out = np.zeros((3*N//8,), dtype=np.uint8)
     offset_byte = 0
     offset_data = 0
@@ -16,7 +14,37 @@ def POLT2BS(p: T.Poly):
         out[offset_byte + 2] = ((p[offset_data + 5] >> 1) & 0x03) | ((p[offset_data + 6] & 0x7) << 2) | ((p[offset_data + 7] & 0x7) << 5)
     return out
 
-def BS2POLT(bytes: T.Bytes) -> T.Poly:
+def POL4T2BS(p: T.Poly):
+    out = np.zeros((4*N//8,), dtype=np.uint8)
+    offset_byte = 0
+    offset_data = 0
+    for j in range(N // 2):
+        offset_byte = j
+        offset_data = 2 * j
+        out[offset_byte] = (p[offset_data] & 0x0f) | ((p[offset_data + 1] & 0x0f) << 4)
+    return out
+
+def POL6T2BS(p: T.Poly):
+    out = np.zeros((6*N//8,), dtype=np.uint8)
+    offset_byte = 0
+    offset_data = 0
+    for j in range(N // 4):
+        offset_byte = 3 * j
+        offset_data = 4 * j
+        out[offset_byte + 0] = (p[offset_data + 0] & 0x3f) | ((p[offset_data + 1] & 0x03) << 6) 
+        out[offset_byte + 1] = ((p[offset_data + 1] >> 2) & 0x0f) | ((p[offset_data + 2] & 0x0f) << 4)
+        out[offset_byte + 2] = ((p[offset_data + 2] >> 4) & 0x03) | ((p[offset_data + 3] & 0x3f) << 2)
+    return out
+
+def POLT2BS(p: T.Poly, t: int):
+    if t == 3:
+        return POL3T2BS(p)
+    elif t == 4:
+        return POL4T2BS(p)
+    elif t == 6:
+        return POL6T2BS(p)
+    
+def BS2POL3T(bytes: T.Bytes) -> T.Poly:
     out = np.zeros((N,), dtype=np.uint16)
     offset_byte = 0
     offset_data = 0
@@ -32,6 +60,38 @@ def BS2POLT(bytes: T.Bytes) -> T.Poly:
         out[offset_data + 6] = ((bytes[offset_byte + 2] >> 2) & 0x07)
         out[offset_data + 7] = ((bytes[offset_byte + 2] >> 5) & 0x07)
     return out
+
+def BS2POL4T(bytes: T.Bytes):
+    out = np.zeros((N,), dtype=np.uint16)
+    offset_byte = 0
+    offset_data = 0
+    for j in range(N // 2):
+        offset_byte = j
+        offset_data = 2 * j
+        out[offset_data] = bytes[offset_byte] & 0x0f
+        out[offset_data + 1] = (bytes[offset_byte] >> 4) & 0x0f
+    return out
+
+def BS2POL6T(bytes: T.Bytes):
+    out = np.zeros((N,), dtype=np.uint16)
+    offset_byte = 0
+    offset_data = 0
+    for j in range(N // 4):
+        offset_byte = 3 * j
+        offset_data = 4 * j
+        out[offset_data + 0] = bytes[offset_byte + 0] & 0x3f
+        out[offset_data + 1] = ((bytes[offset_byte + 0] >> 6) & 0x03) | ((bytes[offset_byte + 1] & 0x0f) << 2)
+        out[offset_data + 2] = ((bytes[offset_byte + 1] & 0xff) >> 4) | ((bytes[offset_byte + 2] & 0x03) << 4)
+        out[offset_data + 3] = ((bytes[offset_byte + 2] & 0xff) >> 2)
+    return out
+
+def BS2POLT(bytes: T.Bytes, t: int):
+    if t == 3:
+        return BS2POL3T(bytes)
+    elif t == 4:
+        return BS2POL4T(bytes)
+    elif t == 6:
+        return BS2POL6T(bytes)
 
 def BS2POLp(bytes: T.Bytes) -> T.Poly:
     out = np.zeros((N,), dtype=np.uint16)
@@ -70,17 +130,17 @@ def BS2POL2(bytes: T.Bytes) -> T.Poly:
             out[j * 8 + i] = ((bytes[j] >> i) & 0x01)
     return out
 
-def BS2POLVECp(bytes: T.Bytes) -> T.PolyVector:
+def BS2POLVECp(bytes: T.Bytes, params: PARAMS) -> T.PolyVector:
     bytes = bytes.reshape((-1, P*N//8))
-    out = np.zeros((L,N), dtype=np.uint16)
-    for i in range(L):
+    out = np.zeros((params.SABER_L,N), dtype=np.uint16)
+    for i in range(params.SABER_L):
         out[i, :] = BS2POLp(bytes[i, :])
     return out
 
-def BS2POLVECq(bytes: T.Bytes) -> T.PolyVector:
+def BS2POLVECq(bytes: T.Bytes, params: PARAMS) -> T.PolyVector:
     bytes = bytes.reshape((-1, Q*N//8))
-    out = np.zeros((L,N), dtype=np.uint16)
-    for i in range(L):
+    out = np.zeros((params.SABER_L,N), dtype=np.uint16)
+    for i in range(params.SABER_L):
         out[i, :] = BS2POLq(bytes[i, :])
     return out
 
@@ -127,14 +187,14 @@ def POL22BS(p: T.Poly) -> T.Bytes:
             out[j] = out[j] | ((p[j * 8 + i] & 0x01) << i)
     return out
 
-def POLVECq2BS(v: T.PolyVector) -> T.Bytes:
-    out = np.zeros((L*Q*N//8,), dtype=np.uint8)
-    for i in range(L):
+def POLVECq2BS(v: T.PolyVector, params: PARAMS) -> T.Bytes:
+    out = np.zeros((params.SABER_L*Q*N//8,), dtype=np.uint8)
+    for i in range(params.SABER_L):
         out[i*Q*N//8:(i+1)*Q*N//8] = POLq2BS(v[i, :])
     return out
 
-def POLVECp2BS(v: T.PolyVector) -> T.Bytes:
-    out = np.zeros((L*P*N//8,), dtype=np.uint8)
-    for i in range(L):
+def POLVECp2BS(v: T.PolyVector, params: PARAMS) -> T.Bytes:
+    out = np.zeros((params.SABER_L*P*N//8,), dtype=np.uint8)
+    for i in range(params.SABER_L):
         out[i*P*N//8:(i+1)*P*N//8] = POLp2BS(v[i, :])
     return out
