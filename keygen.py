@@ -14,12 +14,14 @@ def keygen(params: PARAMS) -> Tuple[Tuple[T.Bytes, T.Bytes], T.Bytes]:
 
     A = gen_matrix(seed_a, params)
     s = gen_secret(seed_s, params)
-    b = (matrix_vector_mul(A, s, 2**Q, True, params) + params.H) % (2**Q)
 
+    b = matrix_vector_mul(A, s, True, params)
+
+    h1 = (1 << (Q - P - 1))
     for i in range(params.SABER_L):
-        b[i, :] = shiftright(b[i, :], Q-P)
+        b[i, :] = shiftright(b[i, :] + h1, Q-P)
 
-    secret_key = POLVECq2BS(s)
-    pk = POLVECp2BS(b)
+    secret_key = POLVECq2BS(s, params)
+    pk = POLVECp2BS(b, params)
 
     return ((seed_a, pk), secret_key)
